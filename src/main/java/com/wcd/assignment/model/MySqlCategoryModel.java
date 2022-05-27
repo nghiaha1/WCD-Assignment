@@ -49,12 +49,16 @@ public class MySqlCategoryModel implements CategoryModel {
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
+                String description = resultSet.getString("description");
+                String detail = resultSet.getString("detail");
                 LocalDateTime createdAt =
                         LocalDateTime.ofInstant(resultSet.getTimestamp("createdAt").toInstant(), ZoneId.systemDefault());
                 LocalDateTime updatedAt =
                         LocalDateTime.ofInstant(resultSet.getTimestamp("updatedAt").toInstant(), ZoneId.systemDefault());
                 int intStatus = resultSet.getInt("status");
                 Category obj = new Category(id, name);
+                obj.setDescription(description);
+                obj.setDetail(detail);
                 obj.setCreatedAt(createdAt);
                 obj.setUpdatedAt(updatedAt);
                 obj.setStatus(CategoryStatus.of(intStatus));
@@ -79,12 +83,16 @@ public class MySqlCategoryModel implements CategoryModel {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String name = resultSet.getString("name");
+                String description = resultSet.getString("description");
+                String detail = resultSet.getString("detail");
                 LocalDateTime createdAt =
                         LocalDateTime.ofInstant(resultSet.getTimestamp("createdAt").toInstant(), ZoneId.systemDefault());
                 LocalDateTime updatedAt =
                         LocalDateTime.ofInstant(resultSet.getTimestamp("updatedAt").toInstant(), ZoneId.systemDefault());
                 int intStatus = resultSet.getInt("status");
                 obj = new Category(id, name);
+                obj.setDescription(description);
+                obj.setDetail(detail);
                 obj.setCreatedAt(createdAt);
                 obj.setUpdatedAt(updatedAt);
                 obj.setStatus(CategoryStatus.of(intStatus));
@@ -97,17 +105,45 @@ public class MySqlCategoryModel implements CategoryModel {
     }
 
     @Override
+    public Category findByName(String name) {
+        Category obj = null;
+        try {
+            Connection connection = ConnectionHelper.getConnection();
+            String sqlQuery = "select * from categories where status = ? and name = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+            preparedStatement.setInt(1, CategoryStatus.ACTIVE.getValue());
+            preparedStatement.setString(2, name);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                String description = resultSet.getString("description");
+                String detail = resultSet.getString("detail");
+                LocalDateTime createdAt =
+                        LocalDateTime.ofInstant(resultSet.getTimestamp("createdAt").toInstant(), ZoneId.systemDefault());
+                LocalDateTime updatedAt =
+                        LocalDateTime.ofInstant(resultSet.getTimestamp("updatedAt").toInstant(), ZoneId.systemDefault());
+                int status = resultSet.getInt("status");
+                obj = new Category(name, description, detail, CategoryStatus.of(status));
+                obj.setCreatedAt(createdAt);
+                obj.setUpdatedAt(updatedAt);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
+    @Override
     public Category update(int id, Category updateObj) {
         try {
             Connection connection = ConnectionHelper.getConnection();
             String sqlQuery = "update categories " +
-                    "set name = ?, createdAt = ?, updatedAt = ?, status = ? where id = ?";
+                    "set name = ?, description = ?, detail = ?, updatedAt = ?, status = ? where id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
             preparedStatement.setString(1, updateObj.getName());
-            preparedStatement.setString(2, updateObj.getCreatedAt().toString());
-            preparedStatement.setString(3, updateObj.getUpdatedAt().toString());
-            preparedStatement.setInt(4, updateObj.getStatus().getValue());
-            preparedStatement.setInt(5, id);
+            preparedStatement.setString(2, updateObj.getDescription());
+            preparedStatement.setString(3, updateObj.getDetail());
+            preparedStatement.setString(4, updateObj.getUpdatedAt().toString());
+            preparedStatement.setInt(5, updateObj.getStatus().getValue());
+            preparedStatement.setInt(6, id);
             preparedStatement.execute();
             System.out.println("Action success!");
             return updateObj;

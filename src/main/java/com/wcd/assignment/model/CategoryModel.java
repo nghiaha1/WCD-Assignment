@@ -11,6 +11,8 @@ public interface CategoryModel {
 
     Category findById(int id);
 
+    Category findByName(String name);
+
     Category update(int id, Category updateObj);
 
     boolean delete(int id);

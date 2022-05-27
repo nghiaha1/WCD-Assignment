@@ -48,6 +48,9 @@ public class Account extends BaseEntity {
         if (email == null && email.length() == 0) {
             errors.put("email", "Please enter email!");
         }
+        if (profileThumbnail == null && profileThumbnail.length() == 0) {
+            errors.put("profileThumbnail", "Please enter profile thumbnail!");
+        }
     }
 
     public HashMap<String, String> getErrors() {

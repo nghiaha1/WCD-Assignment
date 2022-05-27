@@ -32,12 +32,18 @@ public class CreateCategoryServlet extends HttpServlet {
         req.setCharacterEncoding("UTF-8");
         // xử lý validate và save.
         String name = req.getParameter("name");
+        String description = req.getParameter("description");
+        String detail = req.getParameter("detail");
         int status = Integer.parseInt(req.getParameter("status"));
         Category category = new Category();
         category.setName(name);
+        category.setDescription(description);
+        category.setDetail(detail);
         category.setStatus(CategoryStatus.of(status));
+        if (categoryModel.findByName(name) != null) {
+            category.addErrors("name", "Product name is already existed");
+        }
         if (!category.isValid()) {
-            req.setAttribute("categories", categoryModel.findAll());
             req.setAttribute("obj", category);
             req.setAttribute("action", 1);
             req.setAttribute("errors", category.getErrors());
@@ -47,6 +53,8 @@ public class CreateCategoryServlet extends HttpServlet {
         if (categoryModel.save(category) != null) {
             resp.sendRedirect("/admin/categories/list");
         } else {
+            req.setAttribute("action", 1);
+            req.setAttribute("title", "Create Category");
             req.getRequestDispatcher("/admin/categories/form.jsp").forward(req, resp);
         }
     }
